@@ -179,6 +179,12 @@ int main(int argc, char *argv[])
         }
     }
 
+    ret = hostapd_config_validate(ap_config);
+    if (ret < 0) {
+        printf("can't create validate hostapd config\n");
+        goto out;
+    }
+
     if (dnsmasq_load_path) {
         ret = dnsmasq_config_read(dnsmasq_load_path, dhcpd_config);
         if (ret < 0) {

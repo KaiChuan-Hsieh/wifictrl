@@ -26,3 +26,4 @@ void hostapd_config_dump(struct hostapd_config *config);
 struct hostapd_config *hostapd_config_alloc();
 void hostapd_config_free(struct hostapd_config *config);
 int hostapd_config_read(char *file_path, struct hostapd_config *config);
+int hostapd_config_validate(struct hostapd_config *config);
