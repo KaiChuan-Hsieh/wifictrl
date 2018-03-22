@@ -80,6 +80,12 @@ int hostapd_config_read(char *file_path, struct hostapd_config *config)
                 config->country = strdup(val);
             if (strcmp(key, "ignore_broadcast_ssid") == 0 && config->hidden == -1)
                 config->hidden = atoi(val);
+            if (strcmp(key, "vht_oper_chwidth") == 0 && config->bandwidth == -1)
+                config->bandwidth = atoi(val);
+            if (strcmp(key, "ht_capab") == 0 && config->bandwidth == -1) {
+                if (strstr(val, "40"))
+                    config->bandwidth = 1;
+            }
         }
     }
 
@@ -310,14 +316,19 @@ int hostapd_config_validate(struct hostapd_config *config)
             config->channel = 0;
     }
 
-    if (config->moden == -1)
+    /* Bandwidth support, 0: 20MHz, 1: 40MHz, 2: 80MHz */
+    if (config->moden == -1) {
         config->moden = 0;
+        config->bandwidth = 0;
+    }
 
     if (config->modeac == -1)
         config->modeac = 0;
 
-    /* Bandwidth support, 0: 20MHz, 1: 40MHz, 2: 80MHz */
     if (config->bandwidth == -1)
+        config->bandwidth = 0;
+
+    if (config->moden == 1 && config->modeac == 0 && config->bandwidth > 1)
         config->bandwidth = 0;
 
     if (config->hidden == -1)
