@@ -102,7 +102,7 @@ void hostapd_config_dump(struct hostapd_config *config)
         if (config->wpa_version != -1)
             printf("wpa=%d\n", config->wpa_version);
         if (config->psk)
-            printf("wpa_psk=%s\n", config->psk);
+            printf("psk=%s\n", config->psk);
         if (config->own_ip_addr)
             printf("own_ip_addr=%s\n", config->own_ip_addr);
         if (config->nas_identifier)
@@ -218,4 +218,110 @@ void hostapd_config_free(struct hostapd_config *config)
 
         free(config);
     }
+}
+
+int hostapd_config_validate(struct hostapd_config *config)
+{
+    /* The ssid must be assigned */
+    if (!config->ssid)
+        config->ssid = strdup("default_ssid");
+
+    /* The interface must be assigned */
+    if (!config->interface)
+        config->ssid = strdup("wlan0");
+
+    /* One of the security must be set, 0: NONE, 1: WPA-PSK, 2: WPA-EAP */
+    if (config->security == -1) {
+        config->security = 0;
+    } else if (config->security == 1) {
+        if (config->wpa_version == -1)
+            config->wpa_version = 3;
+        if (!config->psk)
+            config->psk = strdup("default_password");
+        if (config->own_ip_addr) {
+            free(config->own_ip_addr);
+            config->own_ip_addr = NULL;
+        }
+        if (config->nas_identifier) {
+            free(config->nas_identifier);
+            config->nas_identifier = NULL;
+        }
+        if (config->auth_svr_addr) {
+            free(config->auth_svr_addr);
+            config->auth_svr_addr = NULL;
+        }
+        if (config->auth_svr_port != -1)
+            config->auth_svr_port = -1;
+        if (config->auth_svr_key) {
+            free(config->auth_svr_key);
+            config->auth_svr_key = NULL;
+        }
+        if (config->acct_svr_addr) {
+            free(config->acct_svr_addr);
+            config->acct_svr_addr = NULL;
+        }
+        if (config->acct_svr_port != -1)
+            config->acct_svr_port = -1;
+        if (config->acct_svr_key) {
+            free(config->acct_svr_key);
+            config->acct_svr_key = NULL;
+        }
+    } else if (config->security == 2) {
+        if (config->wpa_version == -1)
+            config->wpa_version = 3;
+        if (!config->own_ip_addr && !config->nas_identifier)
+            config->own_ip_addr = strdup("127.0.0.1");
+        if (!config->auth_svr_addr)
+            config->auth_svr_addr = strdup("127.0.0.1");
+        if (config->auth_svr_port == -1)
+            config->auth_svr_port = 1812;
+        if (!config->auth_svr_key)
+            config->auth_svr_key = strdup("secret");
+        if (!config->acct_svr_addr)
+            config->acct_svr_addr = strdup("127.0.0.1");
+        if (config->acct_svr_port == -1)
+            config->acct_svr_port = 1813;
+        if (!config->acct_svr_key)
+            config->acct_svr_key = strdup("secret");
+        if (config->psk) {
+            free(config->psk);
+            config->psk = NULL;
+        }
+    }
+
+    if (!config->country)
+        config->country = strdup("US");
+
+    /* Country code WW can only support 2.4GHz */
+    if (strcmp(config->country, "WW") == 0) {
+        config->band = 0;
+        if (config->channel > 13)
+            config->channel = 0;
+    }
+
+    /* Validate country-channel mapping */
+    if (config->band == -1) {
+        config->band = 0;
+    } else if (config->band == 0) {
+        if (config->channel > 13 && config->channel != 0)
+            config->channel = 0;
+    } else if (config->band == 1) {
+        if (config->channel < 36 && config->channel != 0)
+            config->channel = 0;
+    }
+
+    if (config->moden == -1)
+        config->moden = 0;
+
+    if (config->modeac == -1)
+        config->modeac = 0;
+
+    /* Bandwidth support, 0: 20MHz, 1: 40MHz, 2: 80MHz */
+    if (config->bandwidth == -1)
+        config->bandwidth = 0;
+
+    if (config->hidden == -1)
+        config->hidden = 0;
+
+    return 0;
 }
