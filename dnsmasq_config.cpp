@@ -35,6 +35,8 @@ int dnsmasq_config_read(char *file_path, struct dnsmasq_config *config)
             if (cptr)
                 *cptr = 0;
             vptr = val;
+            if (strcmp(key, "interface") == 0 && !config->interface)
+                config->interface = strdup(vptr);
             if (strcmp(key, "listen-address") == 0 && !config->host_ip)
                 config->host_ip = strdup(vptr);
             if (strcmp(key, "server") == 0 && !config->dns_ip)
@@ -73,6 +75,7 @@ struct dnsmasq_config *dnsmasq_config_alloc()
     struct dnsmasq_config *config;
     config = (struct dnsmasq_config *)malloc(sizeof(struct dnsmasq_config));
 
+    config->interface = NULL;
     config->host_ip = NULL;
     config->netmask = NULL;
     config->start_ip = NULL;
@@ -85,6 +88,8 @@ struct dnsmasq_config *dnsmasq_config_alloc()
 void dnsmasq_config_free(struct dnsmasq_config *config)
 {
     if (config) {
+        if (config->interface)
+            free(config->interface);
         if (config->host_ip)
             free(config->host_ip);
         if (config->netmask)
@@ -103,6 +108,8 @@ void dnsmasq_config_free(struct dnsmasq_config *config)
 void dnsmasq_config_dump(struct dnsmasq_config *config)
 {
     if (config) {
+        if (config->interface)
+            printf("interface=%s\n", config->interface);
         if (config->host_ip)
             printf("host_ip=%s\n", config->host_ip);
         if (config->netmask)
@@ -116,3 +123,20 @@ void dnsmasq_config_dump(struct dnsmasq_config *config)
     }
 }
 
+int dnsmasq_config_validate(struct dnsmasq_config *config)
+{
+    if (!config->interface)
+        config->interface = strdup("wlan0");
+    if (!config->host_ip)
+        config->host_ip = strdup("192.168.100.10");
+    if (!config->netmask)
+        config->netmask = strdup("255.255.255.0");
+    if (!config->start_ip)
+        config->start_ip = strdup("192.168.100.11");
+    if (!config->end_ip)
+        config->end_ip = strdup("192.168.100.100");
+    if (!config->dns_ip)
+        config->dns_ip = strdup("192.168.100.10");
+
+    return 0;
+}

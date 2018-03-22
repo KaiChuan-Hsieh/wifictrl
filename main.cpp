@@ -8,7 +8,39 @@
 
 #include "hostapd_config.h"
 #include "dnsmasq_config.h"
-#include "wireless_config.h"
+
+typedef enum {
+    AP_START = 1000,
+    AP_SSID,
+    AP_BRIDGE,
+    AP_IFACE,
+    AP_SEC,
+    AP_WPAVER,
+    AP_PSK,
+    AP_NAS_IP,
+    AP_NAS_ID,
+    AP_AUTH_SRV_ADDR,
+    AP_AUTH_SRV_PORT,
+    AP_AUTH_SRV_KEY,
+    AP_ACCT_SRV_ADDR,
+    AP_ACCT_SRV_PORT,
+    AP_ACCT_SRV_KEY,
+    AP_BAND,
+    AP_CH,
+    AP_11N,
+    AP_11AC,
+    AP_BANDWIDTH,
+    AP_COUNTRY,
+    AP_HIDDEN,
+    AP_LOAD_PATH,
+    DNS_START,
+    HOST_IP,
+    NETMASK,
+    DHCP_START_IP,
+    DHCP_END_IP,
+    DHCP_DNS_IP,
+    DNSMASQ_LOAD_PATH
+} PARAMS;
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +49,6 @@ int main(int argc, char *argv[])
     int ret;
 
     bool ap_start = false;
-    bool cs_read = false;
     bool dnsmasq_start = false;
     char *ap_load_path = NULL;
     char *dnsmasq_load_path = NULL;
@@ -56,14 +87,13 @@ int main(int argc, char *argv[])
           { "ap-country", required_argument, 0, AP_COUNTRY },
           { "ap-hidden", required_argument, 0, AP_HIDDEN },
           { "ap-load-path", required_argument, 0, AP_LOAD_PATH },
-          { "cs-read", no_argument, 0, CS_READ },
           { "dnsmasq-start", no_argument, 0, DNS_START },
           { "host-ip", required_argument, 0, HOST_IP },
-          { "netmask", required_argument, 0, NET_MASK },
+          { "netmask", required_argument, 0, NETMASK },
           { "dhcp-start-ip", required_argument, 0, DHCP_START_IP },
           { "dhcp-end-ip", required_argument, 0, DHCP_END_IP },
-          { "dns-ip", required_argument, 0, DNS_IP },
-          { "dnsmasq-load-path", required_argument, 0, DNS_LOAD_PATH },
+          { "dhcp-dns-ip", required_argument, 0, DHCP_DNS_IP },
+          { "dnsmasq-load-path", required_argument, 0, DNSMASQ_LOAD_PATH },
           { 0, 0, 0, 0 }
         };
 
@@ -84,6 +114,7 @@ int main(int argc, char *argv[])
                 break;
             case AP_IFACE:
                 ap_config->interface = strdup(optarg);
+                dhcpd_config->interface = strdup(optarg);
                 break;
             case AP_SEC:
                 ap_config->security = atoi(optarg);
@@ -142,16 +173,13 @@ int main(int argc, char *argv[])
             case AP_LOAD_PATH:
                 ap_load_path = strdup(optarg);
                 break;
-            case CS_READ:
-                cs_read = true;
-                break;
             case DNS_START:
                 dnsmasq_start = true;
                 break;
             case HOST_IP:
                 dhcpd_config->host_ip = strdup(optarg);
                 break;
-            case NET_MASK:
+            case NETMASK:
                 dhcpd_config->netmask = strdup(optarg);
                 break;
             case DHCP_START_IP:
@@ -160,10 +188,10 @@ int main(int argc, char *argv[])
             case DHCP_END_IP:
                 dhcpd_config->end_ip = strdup(optarg);
                 break;
-            case DNS_IP:
+            case DHCP_DNS_IP:
                 dhcpd_config->dns_ip = strdup(optarg);
                 break;
-            case DNS_LOAD_PATH:
+            case DNSMASQ_LOAD_PATH:
                 dnsmasq_load_path = strdup(optarg);
                 break;
             default:
@@ -193,9 +221,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (cs_read) {
-        // Need to implement
-        printf("read config from centralstore\n");
+    ret = dnsmasq_config_validate(dhcpd_config);
+    if (ret < 0) {
+        printf("can't create validate dnsmasq config\n");
+        goto out;
     }
 
     hostapd_config_dump(ap_config);
