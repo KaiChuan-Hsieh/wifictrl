@@ -39,7 +39,8 @@ typedef enum {
     DHCP_START_IP,
     DHCP_END_IP,
     DHCP_DNS_IP,
-    DNSMASQ_LOAD_PATH
+    DNSMASQ_LOAD_PATH,
+    AP_CONFIG_PATH,
 } PARAMS;
 
 int main(int argc, char *argv[])
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
     bool dnsmasq_start = false;
     char *ap_load_path = NULL;
     char *dnsmasq_load_path = NULL;
+    char *ap_config_path = NULL;
 
     ap_config = hostapd_config_alloc();
     dhcpd_config = dnsmasq_config_alloc();
@@ -94,6 +96,7 @@ int main(int argc, char *argv[])
           { "dhcp-end-ip", required_argument, 0, DHCP_END_IP },
           { "dhcp-dns-ip", required_argument, 0, DHCP_DNS_IP },
           { "dnsmasq-load-path", required_argument, 0, DNSMASQ_LOAD_PATH },
+          { "ap-config-path", required_argument, 0, AP_CONFIG_PATH },
           { 0, 0, 0, 0 }
         };
 
@@ -194,6 +197,9 @@ int main(int argc, char *argv[])
             case DNSMASQ_LOAD_PATH:
                 dnsmasq_load_path = strdup(optarg);
                 break;
+            case AP_CONFIG_PATH:
+                ap_config_path = strdup(optarg);
+                break;
             default:
                 goto out;
         }
@@ -211,6 +217,14 @@ int main(int argc, char *argv[])
     if (ret < 0) {
         printf("can't create validate hostapd config\n");
         goto out;
+    }
+
+    if (ap_config_path) {
+        ret = hostapd_config_create(ap_config_path, ap_config);
+        if (ret < 0) {
+            printf("%s create failed\n", ap_config_path);
+            goto out;
+        }
     }
 
     if (dnsmasq_load_path) {
@@ -237,6 +251,8 @@ out:
         free(ap_load_path);
     if (dnsmasq_load_path)
         free(dnsmasq_load_path);
+    if (ap_config_path)
+        free(ap_config_path);
 
     return 0;
 }

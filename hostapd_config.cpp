@@ -4,6 +4,51 @@
 
 #include "hostapd_config.h"
 
+struct ht40_sideband_map {
+    int channel;
+    char sideband;
+};
+
+struct ht40_sideband_map ht40_sideband_maps[] = {
+    { 1, '+' },
+    { 2, '+' },
+    { 3, '+' },
+    { 4, '+' },
+    { 5, '+' },
+    { 6, '+' },
+    { 7, '+' },
+    { 8, '-' },
+    { 9, '-' },
+    { 10, '-' },
+    { 11, '-' },
+    { 12, '-' },
+    { 13, '-' },
+    { 36, '+' },
+    { 40, '-' },
+    { 44, '+' },
+    { 48, '-' },
+    { 52, '+' },
+    { 56, '-' },
+    { 60, '+' },
+    { 64, '-' },
+    { 100, '+' },
+    { 104, '-' },
+    { 108, '+' },
+    { 112, '-' },
+    { 116, '+' },
+    { 120, '-' },
+    { 124, '+' },
+    { 128, '-' },
+    { 132, '+' },
+    { 136, '-' },
+    { 140, '+' },
+    { 144, '-' },
+    { 149, '+' },
+    { 153, '-' },
+    { 157, '+' },
+    { 161, '-' }
+};
+
 int hostapd_config_read(char *file_path, struct hostapd_config *config)
 {
     FILE *fp;
@@ -240,7 +285,7 @@ int hostapd_config_validate(struct hostapd_config *config)
     if (config->security == -1) {
         config->security = 0;
     } else if (config->security == 1) {
-        if (config->wpa_version == -1)
+        if (config->wpa_version < 1)
             config->wpa_version = 3;
         if (!config->psk)
             config->psk = strdup("default_password");
@@ -273,7 +318,7 @@ int hostapd_config_validate(struct hostapd_config *config)
             config->acct_svr_key = NULL;
         }
     } else if (config->security == 2) {
-        if (config->wpa_version == -1)
+        if (config->wpa_version < 1)
             config->wpa_version = 3;
         if (!config->own_ip_addr && !config->nas_identifier)
             config->own_ip_addr = strdup("127.0.0.1");
@@ -336,6 +381,96 @@ int hostapd_config_validate(struct hostapd_config *config)
 
     if (config->hidden == -1)
         config->hidden = 0;
+
+    return 0;
+}
+
+int hostapd_config_create(char *file_path, struct hostapd_config *config)
+{
+    FILE *fp;
+    int i;
+    int n;
+
+    fp = fopen(file_path, "w");
+    if (!fp)
+        return -1;
+
+    fprintf(fp, "ctrl_interface=/var/run/hostapd\n");
+    fprintf(fp, "interface=%s\n", config->interface);
+
+    if (config->bridge)
+        fprintf(fp, "bridge=%s\n", config->bridge);
+
+    fprintf(fp, "ctrl_interface_group=0\n");
+    fprintf(fp, "ssid=%s\n", config->ssid);
+    fprintf(fp, "country_code=%s\n", config->country);
+    fprintf(fp, "ieee80211d=1\nieee80211h=1\n");
+    fprintf(fp, "local_pwr_constraint=3\n");
+    fprintf(fp, "spectrum_mgmt_required=1\n");
+    if (config->band == 1)
+        fprintf(fp, "hw_mode=a\n");
+    else
+        fprintf(fp, "hw_mode=g\n");
+    fprintf(fp, "channel=%d\n", config->channel);
+    fprintf(fp, "preamble=1\n");
+    fprintf(fp, "auth_algs=3\n");
+    fprintf(fp, "ignore_broadcast_ssid=%d\n", config->hidden);
+    fprintf(fp, "wmm_enabled=1\n");
+
+    if (config->moden) {
+        fprintf(fp, "ieee80211n=%d\n", config->moden);
+        fprintf(fp, "ht_capab=");
+        if (config->bandwidth) {
+            n = sizeof(ht40_sideband_maps)/sizeof(ht40_sideband_maps[0]);
+            for (i = 0; i < n; i++) {
+                if (config->channel == ht40_sideband_maps[i].channel) {
+                    fprintf(fp, "[HT40%c]", ht40_sideband_maps[i].sideband);
+                    break;
+                }
+            }
+
+            if (i == n)
+                fprintf(fp, "[HT40+][HT40-]");
+
+            fprintf(fp, "[SHORT-GI-20][SHORT-GI-40][TX-STBC][RX-STBC1]\n");
+        } else
+            fprintf(fp, "[SHORT-GI-20][TX-STBC][RX-STBC1]\n");
+    }
+
+    if (config->modeac) {
+        fprintf(fp, "ieee80211ac=%d\n", config->modeac);
+
+        if (config->bandwidth == 0 || config->bandwidth == 1) {
+            fprintf(fp, "vht_capab=[RXLDPC][RX-STBC1][TX-STBC-2BY1][SU-BEAMFOEMEE]\n");
+            fprintf(fp, "vht_oper_chwidth=0\n");
+        } else {
+            fprintf(fp, "vht_capab=[SHORT-GI-80][RXLDPC][RX-STBC1][TX-STBC-2BY1][SU-BEAMFOEMEE]\n");
+            fprintf(fp, "vht_oper_chwidth=1\n");
+        }
+    }
+
+    if (config->security == 1) {
+        fprintf(fp, "wpa_key_mgmt=WPA-PSK\n");
+        fprintf(fp, "wpa=%d\n", config->wpa_version);
+        fprintf(fp, "wpa_passphrase=%s\n", config->psk);
+    } else if (config->security == 2) {
+        fprintf(fp, "wpa_key_mgmt=WPA-EAP\n");
+        fprintf(fp, "wpa=%d\n", config->wpa_version);
+        if (config->own_ip_addr)
+            fprintf(fp, "own_ip_addr=%s\n", config->own_ip_addr);
+        if (config->nas_identifier)
+            fprintf(fp, "nas_identifier=%s\n", config->nas_identifier);
+        fprintf(fp, "auth_server_addr=%s\n", config->auth_svr_addr);
+        fprintf(fp, "auth_server_port=%d\n", config->auth_svr_port);
+        fprintf(fp, "auth_server_shared_secret=%s\n", config->auth_svr_key);
+        fprintf(fp, "acct_server_addr=%s\n", config->acct_svr_addr);
+        fprintf(fp, "acct_server_port=%d\n", config->acct_svr_port);
+        fprintf(fp, "acct_server_shared_secret=%s\n", config->acct_svr_key);
+    }
+
+    fprintf(fp, "wowlan_triggers=any\n");
+
+    fclose(fp);
 
     return 0;
 }
