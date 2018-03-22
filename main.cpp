@@ -8,6 +8,7 @@
 
 #include "hostapd_config.h"
 #include "dnsmasq_config.h"
+#include "wireless_config.h"
 
 int main(int argc, char *argv[])
 {
@@ -32,37 +33,37 @@ int main(int argc, char *argv[])
     for (;;) {
         int option_index = 0;
         static struct option long_options[] = {
-          { "ap-start", no_argument, 0, 1000 },
-          { "ap-ssid", required_argument, 0, 1001 },
-          { "ap-bridge", required_argument, 0, 1002 },
-          { "ap-interface", required_argument, 0, 1003 },
-          { "ap-security", required_argument, 0, 1004},
-          { "ap-wpa-version", required_argument, 0, 1005 },
-          { "ap-psk", required_argument, 0, 1006 },
-          { "ap-nas-ip", required_argument, 0, 1007 },
-          { "ap-nas-identifier", required_argument, 0 , 1008 },
-          { "ap-auth-svr-addr", required_argument, 0, 1009 },
-          { "ap-auth-svr-port", required_argument, 0, 1010 },
-          { "ap-auth-svr-key", required_argument, 0, 1011 },
-          { "ap-acct-svr-addr", required_argument, 0, 1012 },
-          { "ap-acct-svr-port", required_argument, 0, 1013 },
-          { "ap-acct-svr-key", required_argument, 0, 1014 },
-          { "ap-band", required_argument, 0, 1015 },
-          { "ap-channel", required_argument, 0, 1016 },
-          { "ap-11n", required_argument, 0, 1017 },
-          { "ap-11ac", required_argument, 0, 1018 },
-          { "ap-bandwidth", required_argument, 0, 1019 },
-          { "ap-country", required_argument, 0, 1020 },
-          { "ap-hidden", required_argument, 0, 1021 },
-          { "ap-load-path", required_argument, 0, 1022 },
-          { "cs-read", no_argument, 0, 1023 },
-          { "dnsmasq-start", no_argument, 0, 1024 },
-          { "host-ip", required_argument, 0, 1025 },
-          { "netmask", required_argument, 0, 1026 },
-          { "dhcp-start-ip", required_argument, 0, 1027 },
-          { "dhcp-end-ip", required_argument, 0, 1028 },
-          { "dns-ip", required_argument, 0, 1029 },
-          { "dnsmasq-load-path", required_argument, 0, 1030 },
+          { "ap-start", no_argument, 0, AP_START },
+          { "ap-ssid", required_argument, 0, AP_SSID },
+          { "ap-bridge", required_argument, 0, AP_BRIDGE },
+          { "ap-interface", required_argument, 0, AP_IFACE },
+          { "ap-security", required_argument, 0, AP_SEC},
+          { "ap-wpa-version", required_argument, 0, AP_WPAVER },
+          { "ap-psk", required_argument, 0, AP_PSK },
+          { "ap-nas-ip", required_argument, 0, AP_NAS_IP },
+          { "ap-nas-identifier", required_argument, 0 , AP_NAS_ID },
+          { "ap-auth-svr-addr", required_argument, 0, AP_AUTH_SRV_ADDR },
+          { "ap-auth-svr-port", required_argument, 0, AP_AUTH_SRV_PORT },
+          { "ap-auth-svr-key", required_argument, 0, AP_AUTH_SRV_KEY },
+          { "ap-acct-svr-addr", required_argument, 0, AP_ACCT_SRV_ADDR },
+          { "ap-acct-svr-port", required_argument, 0, AP_ACCT_SRV_PORT },
+          { "ap-acct-svr-key", required_argument, 0, AP_ACCT_SRV_KEY },
+          { "ap-band", required_argument, 0, AP_BAND },
+          { "ap-channel", required_argument, 0, AP_CH },
+          { "ap-11n", required_argument, 0, AP_11N },
+          { "ap-11ac", required_argument, 0, AP_11AC },
+          { "ap-bandwidth", required_argument, 0, AP_BANDWIDTH },
+          { "ap-country", required_argument, 0, AP_COUNTRY },
+          { "ap-hidden", required_argument, 0, AP_HIDDEN },
+          { "ap-load-path", required_argument, 0, AP_LOAD_PATH },
+          { "cs-read", no_argument, 0, CS_READ },
+          { "dnsmasq-start", no_argument, 0, DNS_START },
+          { "host-ip", required_argument, 0, HOST_IP },
+          { "netmask", required_argument, 0, NET_MASK },
+          { "dhcp-start-ip", required_argument, 0, DHCP_START_IP },
+          { "dhcp-end-ip", required_argument, 0, DHCP_END_IP },
+          { "dns-ip", required_argument, 0, DNS_IP },
+          { "dnsmasq-load-path", required_argument, 0, DNS_LOAD_PATH },
           { 0, 0, 0, 0 }
         };
 
@@ -72,97 +73,97 @@ int main(int argc, char *argv[])
             break;
 
         switch (ret) {
-            case 1000:
+            case AP_START:
                 ap_start = true;
                 break;
-            case 1001:
+            case AP_SSID:
                 ap_config->ssid = strdup(optarg);
                 break;
-            case 1002:
+            case AP_BRIDGE:
                 ap_config->bridge = strdup(optarg);
                 break;
-            case 1003:
+            case AP_IFACE:
                 ap_config->interface = strdup(optarg);
                 break;
-            case 1004:
+            case AP_SEC:
                 ap_config->security = atoi(optarg);
                 break;
-            case 1005:
+            case AP_WPAVER:
                 ap_config->wpa_version = atoi(optarg);
                 break;
-            case 1006:
+            case AP_PSK:
                 ap_config->psk = strdup(optarg);
                 break;
-            case 1007:
+            case AP_NAS_IP:
                 ap_config->own_ip_addr = strdup(optarg);
                 break;
-            case 1008:
+            case AP_NAS_ID:
                 ap_config->nas_identifier = strdup(optarg);
                 break;
-            case 1009:
+            case AP_AUTH_SRV_ADDR:
                 ap_config->auth_svr_addr = strdup(optarg);
                 break;
-            case 1010:
+            case AP_AUTH_SRV_PORT:
                 ap_config->auth_svr_port = atoi(optarg);
                 break;
-            case 1011:
+            case AP_AUTH_SRV_KEY:
                 ap_config->auth_svr_key = strdup(optarg);
                 break;
-            case 1012:
+            case AP_ACCT_SRV_ADDR:
                 ap_config->acct_svr_addr = strdup(optarg);
                 break;
-            case 1013:
+            case AP_ACCT_SRV_PORT:
                 ap_config->acct_svr_port = atoi(optarg);
                 break;
-            case 1014:
+            case AP_ACCT_SRV_KEY:
                 ap_config->acct_svr_key = strdup(optarg);
                 break;
-            case 1015:
+            case AP_BAND:
                 ap_config->band = atoi(optarg);
                 break;
-            case 1016:
+            case AP_CH:
                 ap_config->channel = atoi(optarg);
                 break;
-            case 1017:
+            case AP_11N:
                 ap_config->moden = atoi(optarg);
                 break;
-            case 1018:
+            case AP_11AC:
                 ap_config->modeac = atoi(optarg);
                 break;
-            case 1019:
+            case AP_BANDWIDTH:
                 ap_config->bandwidth = atoi(optarg);
                 break;
-            case 1020:
+            case AP_COUNTRY:
                 ap_config->country = strdup(optarg);
                 break;
-            case 1021:
+            case AP_HIDDEN:
                 ap_config->hidden = atoi(optarg);
                 break;
-            case 1022:
+            case AP_LOAD_PATH:
                 ap_load_path = strdup(optarg);
                 break;
-            case 1023:
+            case CS_READ:
                 cs_read = true;
                 break;
-            case 1024:
+            case DNS_START:
                 dnsmasq_start = true;
                 break;
-            case 1025:
+            case HOST_IP:
                 dhcpd_config->host_ip = strdup(optarg);
                 break;
-            case 1026:
+            case NET_MASK:
                 dhcpd_config->netmask = strdup(optarg);
                 break;
-            case 1027:
+            case DHCP_START_IP:
                 dhcpd_config->start_ip = strdup(optarg);
                 break;
-            case 1028:
+            case DHCP_END_IP:
                 dhcpd_config->end_ip = strdup(optarg);
                 break;
-            case 1029:
+            case DNS_IP:
                 dhcpd_config->dns_ip = strdup(optarg);
                 break;
-            case 1030:
+            case DNS_LOAD_PATH:
                 dnsmasq_load_path = strdup(optarg);
                 break;
             default:
