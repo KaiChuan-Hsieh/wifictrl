@@ -234,7 +234,7 @@ int hostapd_config_validate(struct hostapd_config *config)
 
     /* The interface must be assigned */
     if (!config->interface)
-        config->ssid = strdup("wlan0");
+        config->interface = strdup("wlan0");
 
     /* One of the security must be set, 0: NONE, 1: WPA-PSK, 2: WPA-EAP */
     if (config->security == -1) {
