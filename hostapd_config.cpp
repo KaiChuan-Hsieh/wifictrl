@@ -322,8 +322,11 @@ int hostapd_config_validate(struct hostapd_config *config)
         config->bandwidth = 0;
     }
 
-    if (config->modeac == -1)
+    if (config->modeac == -1) {
         config->modeac = 0;
+    } else if (config->modeac == 1) {
+        config->moden = 1;
+    }
 
     if (config->bandwidth == -1)
         config->bandwidth = 0;
