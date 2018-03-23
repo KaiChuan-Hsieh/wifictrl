@@ -33,7 +33,7 @@ typedef enum {
     AP_COUNTRY,
     AP_HIDDEN,
     AP_LOAD_PATH,
-    DNS_START,
+    DNSMASQ_START,
     HOST_IP,
     NETMASK,
     DHCP_START_IP,
@@ -41,6 +41,8 @@ typedef enum {
     DHCP_DNS_IP,
     DNSMASQ_LOAD_PATH,
     AP_CONFIG_PATH,
+    AP_CONFIG_DUMP,
+    DHCP_CONFIG_DUMP,
 } PARAMS;
 
 int main(int argc, char *argv[])
@@ -49,11 +51,13 @@ int main(int argc, char *argv[])
     struct dnsmasq_config *dhcpd_config;
     int ret;
 
-    bool ap_start = false;
-    bool dnsmasq_start = false;
     char *ap_load_path = NULL;
     char *dnsmasq_load_path = NULL;
     char *ap_config_path = NULL;
+    char *hostapd_path = NULL;
+    char *dnsmasq_path = NULL;
+    bool dump_ap_config = false;
+    bool dump_dhcp_config = false;
 
     ap_config = hostapd_config_alloc();
     dhcpd_config = dnsmasq_config_alloc();
@@ -66,7 +70,7 @@ int main(int argc, char *argv[])
     for (;;) {
         int option_index = 0;
         static struct option long_options[] = {
-          { "ap-start", no_argument, 0, AP_START },
+          { "ap-start", required_argument, 0, AP_START },
           { "ap-ssid", required_argument, 0, AP_SSID },
           { "ap-bridge", required_argument, 0, AP_BRIDGE },
           { "ap-interface", required_argument, 0, AP_IFACE },
@@ -89,7 +93,7 @@ int main(int argc, char *argv[])
           { "ap-country", required_argument, 0, AP_COUNTRY },
           { "ap-hidden", required_argument, 0, AP_HIDDEN },
           { "ap-load-path", required_argument, 0, AP_LOAD_PATH },
-          { "dnsmasq-start", no_argument, 0, DNS_START },
+          { "dnsmasq-start", required_argument, 0, DNSMASQ_START },
           { "host-ip", required_argument, 0, HOST_IP },
           { "netmask", required_argument, 0, NETMASK },
           { "dhcp-start-ip", required_argument, 0, DHCP_START_IP },
@@ -97,6 +101,8 @@ int main(int argc, char *argv[])
           { "dhcp-dns-ip", required_argument, 0, DHCP_DNS_IP },
           { "dnsmasq-load-path", required_argument, 0, DNSMASQ_LOAD_PATH },
           { "ap-config-path", required_argument, 0, AP_CONFIG_PATH },
+          { "ap-config-dump", no_argument, 0, AP_CONFIG_DUMP },
+          { "dhcp-config-dump", no_argument, 0, DHCP_CONFIG_DUMP },
           { 0, 0, 0, 0 }
         };
 
@@ -107,7 +113,7 @@ int main(int argc, char *argv[])
 
         switch (ret) {
             case AP_START:
-                ap_start = true;
+                hostapd_path = strdup(optarg);
                 break;
             case AP_SSID:
                 ap_config->ssid = strdup(optarg);
@@ -176,8 +182,8 @@ int main(int argc, char *argv[])
             case AP_LOAD_PATH:
                 ap_load_path = strdup(optarg);
                 break;
-            case DNS_START:
-                dnsmasq_start = true;
+            case DNSMASQ_START:
+                dnsmasq_path = strdup(optarg);
                 break;
             case HOST_IP:
                 dhcpd_config->host_ip = strdup(optarg);
@@ -199,6 +205,12 @@ int main(int argc, char *argv[])
                 break;
             case AP_CONFIG_PATH:
                 ap_config_path = strdup(optarg);
+                break;
+            case AP_CONFIG_DUMP:
+                dump_ap_config = true;
+                break;
+            case DHCP_CONFIG_DUMP:
+                dump_dhcp_config = true;
                 break;
             default:
                 goto out;
@@ -241,8 +253,10 @@ int main(int argc, char *argv[])
         goto out;
     }
 
-    hostapd_config_dump(ap_config);
-    dnsmasq_config_dump(dhcpd_config);
+    if (dump_ap_config)
+        hostapd_config_dump(ap_config);
+    if (dump_dhcp_config)
+        dnsmasq_config_dump(dhcpd_config);
 
 out:
     hostapd_config_free(ap_config);
@@ -253,6 +267,10 @@ out:
         free(dnsmasq_load_path);
     if (ap_config_path)
         free(ap_config_path);
+    if (hostapd_path)
+        free(hostapd_path);
+    if (dnsmasq_path)
+        free(dnsmasq_path);
 
     return 0;
 }
