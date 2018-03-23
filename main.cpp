@@ -9,6 +9,8 @@
 #include "hostapd_config.h"
 #include "dnsmasq_config.h"
 
+int debug_flag=0;
+
 typedef enum {
     AP_START = 1000,
     AP_SSID,
@@ -44,7 +46,54 @@ typedef enum {
     DNSMASQ_CONFIG_PATH,
     AP_CONFIG_DUMP,
     DHCP_CONFIG_DUMP,
+    HELP,
 } PARAMS;
+
+static void usage(void)
+{
+		printf(
+			"\n"
+			"usage: wifictrl [--OPTIONS] [-P <PID file>] "
+			"\n"
+			"OPTIONS:\n"
+			"   --ap-start             hostapd\n"
+			"   --ap-ssid              ap SSID name\n"
+			"   --ap-bridge            bridge name, ex:br0\n"
+			"   --ap-interface         ap wlan interface name, ex:wlan0\n"
+			"   --ap-security          security mode, 0:Open, 1:WPA-PSK, 2:WPA-Enterprise\n"
+			"   --ap-wpa-version       wpa version, [1|2|3]\n"
+			"   --ap-psk               wpa passphrase\n"
+			"   --ap-nas-ip            ap ip address\n"
+			"   --ap-nas-id            nas identifier string for RADIUS messages ex:ap.barco.com\n"
+			"   --ap-auth-svr-addr     RADIUS authentication server ip\n"
+			"   --ap-auth-svr-port     RADIUS authentication server port\n"
+			"   --ap-auth-svr-key      RADIUS authentication server secret\n"
+			"   --ap-acct-svr-addr     RADIUS accounting server ip\n"
+			"   --ap-acct-svr-port     RADIUS accounting server port\n"
+			"   --ap-acct-svr-key      RADIUS accounting server secret\n"
+			"   --ap-band              ap band, 0:2.4GHz, 1:5GHz\n"
+			"   --ap-channel           ap channel\n"
+			"   --ap-11n               ap 802.11n support\n"
+			"   --ap-11ac              ap 802.11ac support\n"
+			"   --ap-bandwidth         ap channel width, 0:20MHz, 1:40MHz, 2:80MHz\n"
+			"   --ap-country           ap country code, ex:US\n"
+			"   --ap-hidden            ap hidden ssid, 0:disable, 1:enable\n"
+			"   --ap-load-path         file path to import hostapd config, ex:/tmp/debug-wlan0.conf\n"
+			"   --ap-config-path       file path to export hostapd config, ex:/tmp/wlan0.conf\n"
+			"   --dnsmasq-start        start all the interfaces synchronously\n"
+			"   --host-ip              ip address to listen for DNS and DHCP request\n"
+			"   --netmask              netmask\n"
+			"   --dhcp-start-ip        DHCP pool start address\n"
+			"   --dhcp-end-ip          DHCP pool end address\n"
+			"   --dhcp-dns-ip          nameserver address\n"
+			"   --dnsmasq-load-path    file path to import dnsmasq config\n"
+			"   --dnsmasq-config-path  file path to export dnsmasq config\n"
+			"   --ap-config-dump       flag to dump hostapd config\n"
+			"   --dhcp-config-dump     flag to dump dhcp config\n"
+			"   --help                 dump usage\n"
+		);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -80,7 +129,7 @@ int main(int argc, char *argv[])
           { "ap-wpa-version", required_argument, 0, AP_WPAVER },
           { "ap-psk", required_argument, 0, AP_PSK },
           { "ap-nas-ip", required_argument, 0, AP_NAS_IP },
-          { "ap-nas-identifier", required_argument, 0 , AP_NAS_ID },
+          { "ap-nas-id", required_argument, 0 , AP_NAS_ID },
           { "ap-auth-svr-addr", required_argument, 0, AP_AUTH_SRV_ADDR },
           { "ap-auth-svr-port", required_argument, 0, AP_AUTH_SRV_PORT },
           { "ap-auth-svr-key", required_argument, 0, AP_AUTH_SRV_KEY },
@@ -106,13 +155,18 @@ int main(int argc, char *argv[])
           { "dnsmasq-config-path", required_argument, 0, DNSMASQ_CONFIG_PATH },
           { "ap-config-dump", no_argument, 0, AP_CONFIG_DUMP },
           { "dhcp-config-dump", no_argument, 0, DHCP_CONFIG_DUMP },
+          { "help", no_argument, 0, HELP },
           { 0, 0, 0, 0 }
         };
 
         ret = getopt_long(argc, argv, "", long_options, &option_index);
 
-	if (ret < 0)
+        if (ret < 0){
+            if(debug_flag){
+               printf("return value=%d\n", ret);
+            }
             break;
+	}
 
         switch (ret) {
             case AP_START:
@@ -217,6 +271,9 @@ int main(int argc, char *argv[])
                 break;
             case DHCP_CONFIG_DUMP:
                 dump_dhcp_config = true;
+                break;
+            case HELP:
+                usage();
                 break;
             default:
                 goto out;

@@ -53,7 +53,7 @@ int hostapd_config_read(char *file_path, struct hostapd_config *config)
 {
     FILE *fp;
     char line[256];
-    char key[256];
+    char buf[256];
     char val[256];
     char *cptr;
     char *lptr;
@@ -63,7 +63,7 @@ int hostapd_config_read(char *file_path, struct hostapd_config *config)
         return -1;
 
     while (fgets(line, 256, fp)) {
-        memset(key, 0, 256);
+        memset(buf, 0, 256);
         memset(val, 0, 256);
 
         for (lptr = line; *lptr == ' '; lptr++)
@@ -73,19 +73,19 @@ int hostapd_config_read(char *file_path, struct hostapd_config *config)
 
         cptr = strchr(lptr, '=');
         if (cptr) {
-            strncpy(key, lptr, cptr - lptr);
+            strncpy(buf, lptr, cptr - lptr);
             strncpy(val, cptr + 1, strlen(lptr) - (cptr - lptr + 1));
             cptr = strpbrk(val, "\n# ");
             if (cptr)
                 *cptr = 0;
 
-            if (strcmp(key, "ssid") == 0 && !config->ssid)
+            if (strcmp(buf, "ssid") == 0 && !config->ssid)
                 config->ssid = strdup(val);
-            if (strcmp(key, "bridge") == 0 && !config->bridge)
+            if (strcmp(buf, "bridge") == 0 && !config->bridge)
                 config->bridge = strdup(val);
-            if (strcmp(key, "interface") == 0 && !config->interface)
+            if (strcmp(buf, "interface") == 0 && !config->interface)
                 config->interface = strdup(val);
-            if (strcmp(key, "wpa_key_mgmt") == 0 && config->security == -1) {
+            if (strcmp(buf, "wpa_key_mgmt") == 0 && config->security == -1) {
                 if (strcmp(val, "WPA-PSK") == 0)
                     config->security = 1;
                 else if (strcmp(val, "WPA-EAP") == 0)
@@ -93,43 +93,43 @@ int hostapd_config_read(char *file_path, struct hostapd_config *config)
                 else
                     config->security = 0;
             }
-            if (strcmp(key, "wpa") == 0 && config->wpa_version == -1)
+            if (strcmp(buf, "wpa") == 0 && config->wpa_version == -1)
                 config->wpa_version = atoi(val);
-            if (strcmp(key, "wpa_passphrase") == 0 && !config->psk)
+            if (strcmp(buf, "wpa_passphrase") == 0 && !config->psk)
                 config->psk = strdup(val);
-            if (strcmp(key, "own_ip_addr") == 0 && !config->own_ip_addr)
+            if (strcmp(buf, "own_ip_addr") == 0 && !config->own_ip_addr)
                 config->own_ip_addr = strdup(val);
-            if (strcmp(key, "nas_identifier") == 0 && !config->nas_identifier)
+            if (strcmp(buf, "nas_identifier") == 0 && !config->nas_identifier)
                 config->nas_identifier = strdup(val);
-            if (strcmp(key, "auth_server_addr") == 0 && !config->auth_svr_addr)
+            if (strcmp(buf, "auth_server_addr") == 0 && !config->auth_svr_addr)
                 config->auth_svr_addr = strdup(val);
-            if (strcmp(key, "auth_server_port") == 0 && config->auth_svr_port == -1)
+            if (strcmp(buf, "auth_server_port") == 0 && config->auth_svr_port == -1)
                 config->auth_svr_port = atoi(val);
-            if (strcmp(key, "auth_server_shared_secret") == 0 && !config->auth_svr_key)
+            if (strcmp(buf, "auth_server_shared_secret") == 0 && !config->auth_svr_key)
                 config->auth_svr_key = strdup(val);
-            if (strcmp(key, "acct_server_addr") == 0 && !config->acct_svr_addr)
+            if (strcmp(buf, "acct_server_addr") == 0 && !config->acct_svr_addr)
                 config->acct_svr_addr = strdup(val);
-            if (strcmp(key, "acct_server_port") == 0 && config->acct_svr_port == -1)
+            if (strcmp(buf, "acct_server_port") == 0 && config->acct_svr_port == -1)
                 config->acct_svr_port = atoi(val);
-            if (strcmp(key, "acct_server_shared_secret") == 0 && !config->acct_svr_key)
+            if (strcmp(buf, "acct_server_shared_secret") == 0 && !config->acct_svr_key)
                 config->acct_svr_key = strdup(val);
-            if (strcmp(key, "hw_mode") == 0 && config->band == -1)
-                config->band = (strcmp(val, "a") == 0? 1: 0);
-            if (strcmp(key, "channel") == 0 && config->channel == -1)
+            if (strcmp(buf, "hw_mode") == 0 && config->band == ILLEGAL)
+                config->band = (strcmp(val, "a") == 0? BAND_5G: BAND_24G);
+            if (strcmp(buf, "channel") == 0 && config->channel == -1)
                 config->channel = atoi(val);
-            if (strcmp(key, "ieee80211n") == 0 && config->moden == -1)
+            if (strcmp(buf, "ieee80211n") == 0 && config->moden == -1)
                 config->moden = atoi(val);
-            if (strcmp(key, "ieee80211ac") == 0 && config->modeac == -1)
+            if (strcmp(buf, "ieee80211ac") == 0 && config->modeac == -1)
                 config->modeac = atoi(val);
-            if (strcmp(key, "country") == 0 && !config->country)
+            if (strcmp(buf, "country") == 0 && !config->country)
                 config->country = strdup(val);
-            if (strcmp(key, "ignore_broadcast_ssid") == 0 && config->hidden == -1)
+            if (strcmp(buf, "ignore_broadcast_ssid") == 0 && config->hidden == -1)
                 config->hidden = atoi(val);
-            if (strcmp(key, "vht_oper_chwidth") == 0 && config->bandwidth == -1)
+            if (strcmp(buf, "vht_oper_chwidth") == 0 && config->bandwidth == ILLEGAL)
                 config->bandwidth = atoi(val);
-            if (strcmp(key, "ht_capab") == 0 && config->bandwidth == -1) {
+            if (strcmp(buf, "ht_capab") == 0 && config->bandwidth == ILLEGAL) {
                 if (strstr(val, "40"))
-                    config->bandwidth = 1;
+                    config->bandwidth = HT40;
             }
         }
     }
@@ -170,7 +170,7 @@ void hostapd_config_dump(struct hostapd_config *config)
             printf("acct_svr_port=%d\n", config->acct_svr_port);
         if (config->acct_svr_key)
             printf("acct_svr_key=%s\n", config->acct_svr_key);
-        if (config->band != -1)
+        if (config->band != ILLEGAL)
             printf("band=%d\n", config->band);
         if (config->channel != -1)
             printf("channel=%d\n", config->channel);
@@ -178,7 +178,7 @@ void hostapd_config_dump(struct hostapd_config *config)
             printf("moden=%d\n", config->moden);
         if (config->modeac != -1)
             printf("modeac=%d\n", config->modeac);
-        if (config->bandwidth != -1)
+        if (config->bandwidth != ILLEGAL)
             printf("bandwidth=%d\n", config->bandwidth);
         if (config->country)
             printf("country=%s\n", config->country);
@@ -210,11 +210,11 @@ struct hostapd_config* hostapd_config_alloc()
     config->acct_svr_addr = NULL;
     config->acct_svr_port = -1;
     config->acct_svr_key = NULL;
-    config->band = -1;
+    config->band = ILLEGAL;
     config->channel = -1;
     config->moden = -1;
     config->modeac = -1;
-    config->bandwidth = -1;
+    config->bandwidth = ILLEGAL;
     config->country = NULL;
     config->hidden = -1;
 
@@ -252,16 +252,16 @@ void hostapd_config_free(struct hostapd_config *config)
             config->acct_svr_port = -1;
         if (config->acct_svr_key)
             free(config->acct_svr_key);
-        if (config->band != -1)
-            config->band = -1;
+        if (config->band != ILLEGAL)
+            config->band = ILLEGAL;
         if (config->channel != -1)
             config->channel = -1;
         if (config->moden != -1)
             config->moden = -1;
         if (config->modeac != -1)
             config->modeac = -1;
-        if (config->bandwidth != -1)
-            config->bandwidth = -1;
+        if (config->bandwidth != ILLEGAL)
+            config->bandwidth = ILLEGAL;
         if (config->hidden != -1)
             config->hidden = -1;
         if (config->country)
@@ -345,18 +345,18 @@ int hostapd_config_validate(struct hostapd_config *config)
 
     /* Country code WW can only support 2.4GHz */
     if (strcmp(config->country, "WW") == 0) {
-        config->band = 0;
+        config->band = BAND_24G;
         if (config->channel > 13)
             config->channel = 0;
     }
 
     /* Validate country-channel mapping */
-    if (config->band == -1) {
-        config->band = 0;
-    } else if (config->band == 0) {
+    if (config->band == ILLEGAL) {
+        config->band = BAND_24G;
+    } else if (config->band == BAND_24G) {
         if (config->channel > 13 && config->channel != 0)
             config->channel = 0;
-    } else if (config->band == 1) {
+    } else if (config->band == BAND_5G) {
         if (config->channel < 36 && config->channel != 0)
             config->channel = 0;
     }
@@ -364,7 +364,7 @@ int hostapd_config_validate(struct hostapd_config *config)
     /* Bandwidth support, 0: 20MHz, 1: 40MHz, 2: 80MHz */
     if (config->moden == -1) {
         config->moden = 0;
-        config->bandwidth = 0;
+        config->bandwidth = HT20;
     }
 
     if (config->modeac == -1) {
@@ -373,11 +373,11 @@ int hostapd_config_validate(struct hostapd_config *config)
         config->moden = 1;
     }
 
-    if (config->bandwidth == -1)
-        config->bandwidth = 0;
+    if (config->bandwidth == ILLEGAL)
+        config->bandwidth = HT20;
 
-    if (config->moden == 1 && config->modeac == 0 && config->bandwidth > 1)
-        config->bandwidth = 0;
+    if (config->moden == 1 && config->modeac == 0 && config->bandwidth > HT40)
+        config->bandwidth = HT20;
 
     if (config->hidden == -1)
         config->hidden = 0;
@@ -407,7 +407,7 @@ int hostapd_config_create(char *file_path, struct hostapd_config *config)
     fprintf(fp, "ieee80211d=1\nieee80211h=1\n");
     fprintf(fp, "local_pwr_constraint=3\n");
     fprintf(fp, "spectrum_mgmt_required=1\n");
-    if (config->band == 1)
+    if (config->band == BAND_5G)
         fprintf(fp, "hw_mode=a\n");
     else
         fprintf(fp, "hw_mode=g\n");
@@ -440,7 +440,7 @@ int hostapd_config_create(char *file_path, struct hostapd_config *config)
     if (config->modeac) {
         fprintf(fp, "ieee80211ac=%d\n", config->modeac);
 
-        if (config->bandwidth == 0 || config->bandwidth == 1) {
+        if (config->bandwidth == HT20 || config->bandwidth == HT40) {
             fprintf(fp, "vht_capab=[RXLDPC][RX-STBC1][TX-STBC-2BY1][SU-BEAMFOEMEE]\n");
             fprintf(fp, "vht_oper_chwidth=0\n");
         } else {

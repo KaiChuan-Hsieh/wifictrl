@@ -1,3 +1,17 @@
+#define ILLEGAL -1
+
+
+enum wifi_band {
+	BAND_24G,
+	BAND_5G
+};
+
+enum wifi_bandwith {
+	HT20,
+	HT40,
+	VHT80
+};
+
 struct hostapd_config {
     char *ssid;
     char *bridge;
