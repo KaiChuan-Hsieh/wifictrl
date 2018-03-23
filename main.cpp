@@ -41,6 +41,7 @@ typedef enum {
     DHCP_DNS_IP,
     DNSMASQ_LOAD_PATH,
     AP_CONFIG_PATH,
+    DNSMASQ_CONFIG_PATH,
     AP_CONFIG_DUMP,
     DHCP_CONFIG_DUMP,
 } PARAMS;
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
     char *ap_load_path = NULL;
     char *dnsmasq_load_path = NULL;
     char *ap_config_path = NULL;
+    char *dnsmasq_config_path = NULL;
     char *hostapd_path = NULL;
     char *dnsmasq_path = NULL;
     bool dump_ap_config = false;
@@ -101,6 +103,7 @@ int main(int argc, char *argv[])
           { "dhcp-dns-ip", required_argument, 0, DHCP_DNS_IP },
           { "dnsmasq-load-path", required_argument, 0, DNSMASQ_LOAD_PATH },
           { "ap-config-path", required_argument, 0, AP_CONFIG_PATH },
+          { "dnsmasq-config-path", required_argument, 0, DNSMASQ_CONFIG_PATH },
           { "ap-config-dump", no_argument, 0, AP_CONFIG_DUMP },
           { "dhcp-config-dump", no_argument, 0, DHCP_CONFIG_DUMP },
           { 0, 0, 0, 0 }
@@ -206,6 +209,9 @@ int main(int argc, char *argv[])
             case AP_CONFIG_PATH:
                 ap_config_path = strdup(optarg);
                 break;
+            case DNSMASQ_CONFIG_PATH:
+                dnsmasq_config_path = strdup(optarg);
+                break;
             case AP_CONFIG_DUMP:
                 dump_ap_config = true;
                 break;
@@ -251,6 +257,14 @@ int main(int argc, char *argv[])
     if (ret < 0) {
         printf("can't create validate dnsmasq config\n");
         goto out;
+    }
+
+    if (dnsmasq_config_path) {
+        ret = dnsmasq_config_create(dnsmasq_config_path, dhcpd_config);
+        if (ret < 0) {
+            printf("%s create failed\n", dnsmasq_config_path);
+            goto out;
+        }
     }
 
     if (dump_ap_config)

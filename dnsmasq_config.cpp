@@ -140,3 +140,23 @@ int dnsmasq_config_validate(struct dnsmasq_config *config)
 
     return 0;
 }
+
+int dnsmasq_config_create(char *file_path, struct dnsmasq_config *config)
+{
+    FILE *fp;
+
+    fp = fopen(file_path, "w");
+    if (!fp)
+        return -1;
+
+    fprintf(fp, "interface=%s\n", config->interface);
+    fprintf(fp, "listen-address=%s\n", config->host_ip);
+    fprintf(fp, "bind-interfaces\n");
+    fprintf(fp, "server=%s\n", config->dns_ip);
+    fprintf(fp, "dhcp-range=%s,%s,%s,12h\n", config->start_ip,
+            config->end_ip, config->netmask);
+
+    fclose(fp);
+
+    return 0;
+}
