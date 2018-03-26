@@ -350,6 +350,9 @@ int hostapd_config_validate(struct hostapd_config *config)
             config->channel = 0;
     }
 
+    if (config->channel == -1)
+        config->channel = 0;
+
     /* Validate country-channel mapping */
     if (config->band == ILLEGAL) {
         config->band = BAND_24G;
