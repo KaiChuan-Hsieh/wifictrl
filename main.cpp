@@ -46,7 +46,6 @@ typedef enum {
     DNSMASQ_CONFIG_PATH,
     AP_CONFIG_DUMP,
     DHCP_CONFIG_DUMP,
-    HELP,
 } PARAMS;
 
 static void usage(void)
@@ -56,7 +55,7 @@ static void usage(void)
 			"usage: wifictrl [--OPTIONS] [-P <PID file>] "
 			"\n"
 			"OPTIONS:\n"
-			"   --ap-start             hostapd\n"
+			"   --ap-start             hostapd executable path\n"
 			"   --ap-ssid              ap SSID name\n"
 			"   --ap-bridge            bridge name, ex:br0\n"
 			"   --ap-interface         ap wlan interface name, ex:wlan0\n"
@@ -80,7 +79,7 @@ static void usage(void)
 			"   --ap-hidden            ap hidden ssid, 0:disable, 1:enable\n"
 			"   --ap-load-path         file path to import hostapd config, ex:/tmp/debug-wlan0.conf\n"
 			"   --ap-config-path       file path to export hostapd config, ex:/tmp/wlan0.conf\n"
-			"   --dnsmasq-start        start all the interfaces synchronously\n"
+			"   --dnsmasq-start        dnsmasq executable path\n"
 			"   --host-ip              ip address to listen for DNS and DHCP request\n"
 			"   --netmask              netmask\n"
 			"   --dhcp-start-ip        DHCP pool start address\n"
@@ -90,7 +89,7 @@ static void usage(void)
 			"   --dnsmasq-config-path  file path to export dnsmasq config\n"
 			"   --ap-config-dump       flag to dump hostapd config\n"
 			"   --dhcp-config-dump     flag to dump dhcp config\n"
-			"   --help                 dump usage\n"
+			"   -h, --help             dump usage\n"
 		);
 }
 
@@ -155,11 +154,11 @@ int main(int argc, char *argv[])
           { "dnsmasq-config-path", required_argument, 0, DNSMASQ_CONFIG_PATH },
           { "ap-config-dump", no_argument, 0, AP_CONFIG_DUMP },
           { "dhcp-config-dump", no_argument, 0, DHCP_CONFIG_DUMP },
-          { "help", no_argument, 0, HELP },
+          { "help", no_argument, 0, 'h' },
           { 0, 0, 0, 0 }
         };
 
-        ret = getopt_long(argc, argv, "", long_options, &option_index);
+        ret = getopt_long(argc, argv, "h", long_options, &option_index);
 
         if (ret < 0){
             if(debug_flag){
@@ -272,7 +271,7 @@ int main(int argc, char *argv[])
             case DHCP_CONFIG_DUMP:
                 dump_dhcp_config = true;
                 break;
-            case HELP:
+            case 'h':
                 usage();
                 break;
             default:
