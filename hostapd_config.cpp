@@ -432,19 +432,19 @@ int hostapd_config_create(char *file_path, struct hostapd_config *config)
             if (i == n)
                 fprintf(fp, "[HT40+][HT40-]");
 
-            fprintf(fp, "[SHORT-GI-20][SHORT-GI-40][TX-STBC][RX-STBC1]\n");
+            fprintf(fp, "[SHORT-GI-20][SHORT-GI-40][TX-STBC]\n");
         } else
-            fprintf(fp, "[SHORT-GI-20][TX-STBC][RX-STBC1]\n");
+            fprintf(fp, "[SHORT-GI-20][TX-STBC]\n");
     }
 
     if (config->modeac) {
         fprintf(fp, "ieee80211ac=%d\n", config->modeac);
 
         if (config->bandwidth == HT20 || config->bandwidth == HT40) {
-            fprintf(fp, "vht_capab=[RXLDPC][RX-STBC1][TX-STBC-2BY1][SU-BEAMFOEMEE]\n");
+            fprintf(fp, "vht_capab=[RXLDPC][TX-STBC-2BY1][SU-BEAMFOEMEE]\n");
             fprintf(fp, "vht_oper_chwidth=0\n");
         } else {
-            fprintf(fp, "vht_capab=[SHORT-GI-80][RXLDPC][RX-STBC1][TX-STBC-2BY1][SU-BEAMFOEMEE]\n");
+            fprintf(fp, "vht_capab=[SHORT-GI-80][RXLDPC][TX-STBC-2BY1][SU-BEAMFOEMEE]\n");
             fprintf(fp, "vht_oper_chwidth=1\n");
         }
     }
@@ -452,10 +452,18 @@ int hostapd_config_create(char *file_path, struct hostapd_config *config)
     if (config->security == 1) {
         fprintf(fp, "wpa_key_mgmt=WPA-PSK\n");
         fprintf(fp, "wpa=%d\n", config->wpa_version);
+        if (config->wpa_version == 2)
+            fprintf(fp, "rsn_pairwise=CCMP\n");
+        else
+            fprintf(fp, "wpa_pairwise=CCMP TKIP\n");
         fprintf(fp, "wpa_passphrase=%s\n", config->psk);
     } else if (config->security == 2) {
         fprintf(fp, "wpa_key_mgmt=WPA-EAP\n");
         fprintf(fp, "wpa=%d\n", config->wpa_version);
+        if (config->wpa_version == 2)
+            fprintf(fp, "rsn_pairwise=CCMP\n");
+        else
+            fprintf(fp, "wpa_pairwise=CCMP TKIP\n");
         if (config->own_ip_addr)
             fprintf(fp, "own_ip_addr=%s\n", config->own_ip_addr);
         if (config->nas_identifier)

@@ -301,6 +301,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (hostapd_path) {
+        ret = hostapd_ctrl_start(hostapd_path, ap_config_path);
+        if (ret < 0) {
+            printf("%s start failed\n", hostapd_path);
+            goto out;
+        }
+    }
+
     if (dnsmasq_load_path) {
         ret = dnsmasq_config_read(dnsmasq_load_path, dhcpd_config);
         if (ret < 0) {
