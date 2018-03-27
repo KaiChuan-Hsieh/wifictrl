@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (hostapd_path) {
+    if (hostapd_path && ap_config_path) {
         ret = hostapd_ctrl_start(hostapd_path, ap_config_path);
         if (ret < 0) {
             printf("%s start failed\n", hostapd_path);
@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (dnsmasq_path) {
+    if (dnsmasq_path && dnsmasq_config_path) {
         ret = dnsmasq_ctrl_start(dnsmasq_path, dnsmasq_config_path);
         if (ret < 0) {
             printf("%s start failed\n", dnsmasq_path);
