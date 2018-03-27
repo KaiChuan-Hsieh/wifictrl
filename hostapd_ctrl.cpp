@@ -13,17 +13,9 @@
 #define DEFAULT_PID_PATH "/var/run/hostapd/hostapd.pid"
 
 extern char *get_config_value(const char *file_path, const char *key);
-extern int get_interface_state(const char *ifname);
+extern int get_intf_state(const char *ifname);
 extern pid_t get_pid(const char *file_path);
-
-void free_params(char *argv[])
-{
-    int i = 0;
-    while (argv[i]) {
-        free(argv[i]);
-        i++;
-    }
-}
+void free_params(char *argv[]);
 
 int hostapd_ctrl_start(const char *hostapd_path, const char *config_path)
 {
@@ -50,7 +42,7 @@ int hostapd_ctrl_start(const char *hostapd_path, const char *config_path)
             if (ret < 0) {
                 goto out;
             }
-            ret = get_interface_state(ifname);
+            ret = get_intf_state(ifname);
             if (ret == 0) {
                 break;
             }

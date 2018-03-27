@@ -331,7 +331,6 @@ int main(int argc, char *argv[])
         }
     }
 
-/*
     if (dnsmasq_path) {
         ret = dnsmasq_ctrl_start(dnsmasq_path, dnsmasq_config_path);
         if (ret < 0) {
@@ -339,7 +338,6 @@ int main(int argc, char *argv[])
             goto out;
         }
     }
-*/
 
     if (dump_ap_config)
         hostapd_config_dump(ap_config);

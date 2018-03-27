@@ -13,8 +13,6 @@ char *get_config_value(const char *file_path, const char *key)
     char *cptr;
     char *lptr;
 
-    printf("%s In\n", __func__);
-
     fp = fopen(file_path, "r");
 
     if (!fp)
@@ -48,8 +46,6 @@ char *get_config_value(const char *file_path, const char *key)
     fclose(fp);
 
     cptr = strdup(val);
-
-    printf("%s Out\n", __func__);
 
     return cptr;
 }
