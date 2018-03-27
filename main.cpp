@@ -331,6 +331,16 @@ int main(int argc, char *argv[])
         }
     }
 
+/*
+    if (dnsmasq_path) {
+        ret = dnsmasq_ctrl_start(dnsmasq_path, dnsmasq_config_path);
+        if (ret < 0) {
+            printf("%s start failed\n", dnsmasq_path);
+            goto out;
+        }
+    }
+*/
+
     if (dump_ap_config)
         hostapd_config_dump(ap_config);
     if (dump_dhcp_config)

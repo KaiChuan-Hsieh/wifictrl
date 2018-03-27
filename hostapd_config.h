@@ -43,4 +43,4 @@ int hostapd_config_read(char *file_path, struct hostapd_config *config);
 int hostapd_config_validate(struct hostapd_config *config);
 int hostapd_config_create(char *file_path, struct hostapd_config *config);
 
-int hostapd_ctrl_start(char *file_path, char *config_path);
+int hostapd_ctrl_start(const char *file_path, const char *config_path);

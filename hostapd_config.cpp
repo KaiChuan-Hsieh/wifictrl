@@ -359,6 +359,7 @@ int hostapd_config_validate(struct hostapd_config *config)
     } else if (config->band == BAND_24G) {
         if (config->channel > 13 && config->channel != 0)
             config->channel = 0;
+            config->modeac = 0;
     } else if (config->band == BAND_5G) {
         if (config->channel < 36 && config->channel != 0)
             config->channel = 0;
