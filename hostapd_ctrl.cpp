@@ -29,7 +29,7 @@ int hostapd_ctrl_start(const char *hostapd_path, const char *config_path)
 {
     pid_t pid;
     char *pid_path = strdup(DEFAULT_PID_PATH);
-    char *argv[6];
+    char *argv[6] = {0};
     int ret = 0;
     int status;
     char *ifname;
