@@ -35,7 +35,7 @@ typedef enum {
     AP_COUNTRY,
     AP_HIDDEN,
     AP_LOAD_PATH,
-    DNSMASQ_START,
+    DHCPD_START,
     HOST_IP,
     NETMASK,
     DHCP_START_IP,
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     char *ap_config_path = NULL;
     char *dnsmasq_config_path = NULL;
     char *hostapd_path = NULL;
-    char *dnsmasq_path = NULL;
+    char *dhcpd_path = NULL;
     bool dump_ap_config = false;
     bool dump_dhcp_config = false;
 
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
           { "ap-country", required_argument, 0, AP_COUNTRY },
           { "ap-hidden", required_argument, 0, AP_HIDDEN },
           { "ap-load-path", required_argument, 0, AP_LOAD_PATH },
-          { "dnsmasq-start", required_argument, 0, DNSMASQ_START },
+          { "dhcpd-start", required_argument, 0, DHCPD_START },
           { "host-ip", required_argument, 0, HOST_IP },
           { "netmask", required_argument, 0, NETMASK },
           { "dhcp-start-ip", required_argument, 0, DHCP_START_IP },
@@ -238,8 +238,8 @@ int main(int argc, char *argv[])
             case AP_LOAD_PATH:
                 ap_load_path = strdup(optarg);
                 break;
-            case DNSMASQ_START:
-                dnsmasq_path = strdup(optarg);
+            case DHCPD_START:
+                dhcpd_path = strdup(optarg);
                 break;
             case HOST_IP:
                 dhcpd_config->host_ip = strdup(optarg);
@@ -331,10 +331,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (dnsmasq_path && dnsmasq_config_path) {
-        ret = dnsmasq_ctrl_start(dnsmasq_path, dnsmasq_config_path);
+    if (dhcpd_path && dnsmasq_config_path) {
+        ret = dnsmasq_ctrl_start(dhcpd_path, dnsmasq_config_path);
         if (ret < 0) {
-            printf("%s start failed\n", dnsmasq_path);
+            printf("%s start failed\n", dhcpd_path);
             goto out;
         }
     }
@@ -355,8 +355,8 @@ out:
         free(ap_config_path);
     if (hostapd_path)
         free(hostapd_path);
-    if (dnsmasq_path)
-        free(dnsmasq_path);
+    if (dhcpd_path)
+        free(dhcpd_path);
 
     return 0;
 }
